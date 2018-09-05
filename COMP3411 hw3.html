@@ -1,0 +1,261 @@
+<!DOCTYPE html PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<!-- saved from url=(0048)http://www.cse.unsw.edu.au/~cs3411/17s1/hw3raft/ -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>COMP3411 hw3</title>
+</head>
+<body lang="EN">
+<h2 align="center">
+COMP 3411 Artificial Intelligence<br>
+Session 1, 2017
+</h2>
+<h3 align="center">
+Project 3, Option 1: Treasure Hunt
+</h3>
+<p align="center">
+Due: Sunday 28 May, 11:59 pm
+<br align="center">
+Marks: 18% of final assessment
+</p><p>
+</p><p>
+
+For this project you will be implementing an agent to play a simple
+text-based adventure game. The agent is considered to be stranded
+on a small group of islands, with a few trees and the ruins of some
+ancient buildings. It is required to move around a rectangular
+environment, collecting tools and avoiding (or removing) obstacles
+along the way.
+</p><p>
+The obstacles and tools within the environment are represented as follows:
+</p><p>
+<strong><u>Obstacles</u>&nbsp;&nbsp;<u>Tools</u></strong>
+<table>
+<tbody><tr><td><tt>T</tt>&nbsp;</td><td>tree&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td><tt>a</tt>&nbsp;</td><td>axe</td></tr>
+<tr><td><tt>-</tt></td><td>door</td><td><tt>k</tt></td><td>key</td></tr>
+<tr><td><tt>*</tt></td><td>wall</td><td><tt>d</tt></td><td>dynamite</td></tr>
+<tr><td><tt>~</tt></td><td>water</td><td><tt>$</tt></td><td>treasure</td></tr>
+</tbody></table>
+</p><p>
+The agent will be represented by one of the characters
+<tt>^, v, <code>&lt;</code></tt>&nbsp; or&nbsp; <tt><code>&gt;</code>,</tt>
+depending on which direction it is pointing.
+The agent is capable of the following instructions:
+</p><p>
+<tt>L</tt>&nbsp;&nbsp; turn left<br>
+<tt>R</tt>&nbsp;&nbsp; turn right<br>
+<tt>F</tt>&nbsp;&nbsp; (try to) move forward<br>
+<tt>U</tt>&nbsp;&nbsp; (try to) unlock a door, using an key<br>
+<tt>C</tt>&nbsp;&nbsp; (try to) chop down a tree, using an axe<br>
+<tt>B</tt>&nbsp;&nbsp; (try to) blast a wall or tree, using dynamite
+</p><p>
+When it executes an <tt>L</tt> or <tt>R</tt> instruction,
+the agent remains in the same location and only its
+direction changes.
+When it executes an <tt>F</tt> instruction,
+the agent attempts to move a single step in whichever direction it is pointing.
+The <tt>F</tt> instruction will fail (have no effect)
+if there is a wall or tree directly in front of the agent.
+</p><p> 
+When the agent moves to a location occupied by a tool,
+it automatically picks up the tool.
+The agent may use a <tt>C</tt>, <tt>U</tt> or <tt>B</tt> instruction
+to remove an obstacle immediately in front of it,
+if it is carrying the appropriate tool.
+A tree may be removed with a <tt>C</tt> (chop) instruction, if an axe is held.
+A door may be removed with a <tt>U</tt> (unlock) instruction, if a key is held.
+A wall, tree or door may be removed with a <tt>B</tt> (blast) instruction,
+if dynamite is held.
+</p><p>
+Whenever a tree is chopped, the tree automatically becomes a raft which the agent can use as a tool to move across the water.
+If the agent is not holding a raft and moves forward into the water, it will drown.
+If the agent is holding a raft, it can safely move forward into the water, and continue to move around on the water, using the raft.
+When the agent steps back onto the land, the raft it was using will sink and cannot be used again. The agent will need to chop down another tree in order to get a new raft.
+</p><p>
+If the agent attempts to move off the edge of the environment,
+it dies.
+</p><p>
+To win the game, the agent must pick up the treasure and
+then return to its initial location.
+</p><p>
+<b>Running as a Single Process</b>
+</p><p>
+Copy the archive <a href="http://www.cse.unsw.edu.au/~cs3411/17s1/hw3raft/src.zip"><tt>src.zip</tt></a> into your own filespace and unzip it.
+Then type
+</p><pre>cd src
+javac *.java
+java Raft -i s0.in
+</pre>
+You should then see something like this:
+<pre>~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~  d   *     T   a  ~~
+~~    *-*     ***    ~~
+~~****     v     ****~~
+~~TTT**         **TTT~~
+~~  $ **   k   **    ~~
+~~     **     **     ~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Enter Action(s): 
+</pre>
+This allows you to play the role of the agent by typing
+commands at the keyboard (followed by &lt;Enter&gt;).
+Note:
+<ul>
+<li>a key can be used to unlock any door;
+once it is unlocked, it has effectively been removed from
+the environment and can never be "closed" again. 
+</li><li>an axe or key can be used multiple times,
+but each dynamite can be used only once.
+</li><li>
+the agent can hold multiple dynamites simultaneously,
+but it can only hold one raft at a time.
+</li><li>
+<tt>C</tt>, <tt>U</tt> or <tt>B</tt> instructions will fail
+(have no effect) if the appropriate tool is not held,
+or if the location immediately in front of the agent
+does not contain an appropriate obstacle.
+</li></ul>
+<p>
+<b>Running in Network Mode</b>
+</p><p>
+Follow these instructions to see how the game runs in
+network mode:
+</p><ol>
+<li>
+open two windows, and <tt>cd</tt> to the <tt>src</tt> directory in
+both of them.
+</li><li> choose a port number between 1025 and 65535 - let's suppose you choose
+31415.
+</li><li>
+type this in one window:
+<pre>java Raft -p 31415 -i s0.in
+</pre>
+</li><li>
+type this in the other window:
+<pre>java Agent -p 31415
+</pre>
+</li></ol>
+In network mode, the agent runs as a separate process
+and communicates with the game engine through a TCPIP socket.
+Notice that the agent cannot see the whole environment,
+but only a 5-by-5 "window" around its current location,
+appropriately rotated.
+From the agent's point of view,
+locations off the edge of the environment appear as a dot.
+<p>
+We have also provided a C version of the agent,
+which you can run by typing
+</p><pre>make
+./agent -p 31415
+</pre>
+
+<p>
+<b>Writing an Agent</b>
+</p><p>
+At each time step, the environment will send a series of 24
+characters to the agent, constituting a scan of the
+5-by-5 window it is currently seeing;
+the agent must send back a
+single character to indicate the action it has chosen.
+</p><p>
+You are free to write the agent in any language you choose.
+If you are writing in Java, your main file should be called
+<code>Agent.java</code> (you are free to use the supplied file
+<code>Agent.java</code> as a starting point).
+If you are writing in C,
+you are free to use the files <code>agent.c</code>, <code>pipe.c</code>
+and <code>pipe.h</code> as a starting point.
+In other languages, you will have to write the socket code
+for yourself.
+You must include a <code>Makefile</code> with your submission,
+producing an executable called <code>agent</code>.
+</p><p>
+You may assume that the specified environment is no larger than 80 by 80,
+but the agent can begin anywhere inside it.
+</p><p>
+Additional examples of input and output files will be
+provided in the directory <tt><a href="http://www.cse.unsw.edu.au/~cs3411/17s1/hw3raft/sample">hw3raft/sample</a></tt>.
+</p><p>
+There is a widget on the course Web site which allows you to edit
+your own input maps, test them using a graphical interface.
+and share them with others.
+</p><p>
+<b>Question</b>
+</p><p>
+At the top of your code, in a block of comments,
+you must provide a brief answer (one or two paragraphs)
+to this Question:
+</p><blockquote>
+Briefly describe how your program works, including any algorithms
+and data structures employed, and explain any design decisions
+you made along the way.
+</blockquote>
+
+<h4>Submission</h4>
+
+COMP3411 students should submit by typing
+<pre>give cs3411 hw3raft Makefile ...
+</pre>
+COMP9414/9814 students should submit by typing
+<pre>give cs9414 hw3raft Makefile ...
+</pre>
+You can submit as many times as you like - later submissions
+will overwrite earlier ones. You can check that your submission
+has been received by using one of these commands:
+<p>
+<tt>3411 classrun -check</tt><br>
+<tt>9414 classrun -check</tt>
+</p><p>
+The submission deadline is Sunday 28 May, 11:59 pm.<br>
+15% penalty will be applied to the (maximum) mark
+for every 24 hours late after the deadline.
+</p><p>
+Questions relating to the project can be posted to the
+Forums on the course Web site.
+</p><p>
+If you have a question that has not already been answered on
+the Forum, you can email it to
+<code>blair@cse.unsw.edu.au</code>
+</p><p>
+Please ensure that you submit the source files and NOT any binary files.
+The <code>give</code> system will compile your program using your
+<code>Makefile</code> and check that it produces a binary file
+(or java class files) with the correct name.
+</p><p>
+<b>Assessment</b>
+</p><p>
+Your program will be tested on a series of sample inputs
+with successively more challenging environments.
+There will be:
+</p><ul>
+<li>12 marks for functionality (automarking)
+</li><li>6 marks for Algorithms, Style, Comments and answer to the Question
+</li></ul>
+You should always adhere to good coding practices and style.
+In general, a program that attempts a substantial
+part of the job but does that part correctly
+will receive more marks than one attempting to do
+the entire job but with many errors.
+
+<h4>Plagiarism Policy</h4>
+<p>
+Your program must be entirely your own work.
+Plagiarism detection software will be used to compare all submissions pairwise
+(including submissions for any similar projects from previous years)
+and serious penalties will be applied, particularly in the case
+of repeat offences.
+</p><p>
+<b>DO NOT COPY FROM OTHERS; DO NOT ALLOW ANYONE TO SEE YOUR CODE</b>
+</p><p>
+Please refer to the
+<a href="https://student.unsw.edu.au/plagiarism">UNSW Policy on Academic Honesty and Plagiarism</a>
+if you require further clarification on this matter.
+</p><p>
+</p><p>
+Good luck!
+<br>
+</p><hr>
+
+
+</body></html>
